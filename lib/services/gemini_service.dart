@@ -6,7 +6,10 @@ class GeminiService {
   static final GeminiService _instance = GeminiService._internal();
   GenerativeModel? _model;
   GenerativeModel? _visionModel;
-  static const String apiKey = String.fromEnvironment('GEMINI_API_KEY');
+  static const String apiKey = String.fromEnvironment(
+    'GEMINI_API_KEY',
+    defaultValue: 'AIzaSyBgkc55uIuOpPKliKEbZfCBvY8vKGtNVxI',
+  );
   bool _isInitialized = false;
   String? _initializationError;
 

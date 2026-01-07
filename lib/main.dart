@@ -45,7 +45,13 @@ class MyApp extends StatelessWidget {
 
   String _getInitialRoute() {
     // Check if user is already authenticated
-    final isAuthenticated = SupabaseService.instance.isAuthenticated;
-    return isAuthenticated ? AppRoutes.homeDashboard : AppRoutes.loginScreen;
+    try {
+      final isAuthenticated = SupabaseService.instance.isAuthenticated;
+      return isAuthenticated ? AppRoutes.homeDashboard : AppRoutes.loginScreen;
+    } catch (e) {
+      // If Supabase is not initialized, go to login screen
+      debugPrint('Supabase not initialized, going to login: $e');
+      return AppRoutes.loginScreen;
+    }
   }
 }

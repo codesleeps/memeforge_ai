@@ -9,11 +9,12 @@ class SupabaseService {
 
   static const String supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: '',
+    defaultValue: 'https://snfzxeapcchyzergbxar.supabase.co',
   );
   static const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: '',
+    defaultValue:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNuZnp4ZWFwY2NoeXplcmdieGFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3MjIyMjgsImV4cCI6MjA4MzI5ODIyOH0.48t7-txc-txayMLorKQ3CLpjCtLpD1NXCP6RWGhjaLA',
   );
 
   static Future<void> initialize() async {
@@ -298,6 +299,7 @@ class SupabaseService {
             'ai_prompt': aiPrompt,
             'top_text': topText,
             'bottom_text': bottomText,
+            'file_size': 0, // Default to 0 for external URLs
             'created_at': DateTime.now().toIso8601String(),
           })
           .select()
