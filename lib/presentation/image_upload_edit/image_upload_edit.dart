@@ -82,16 +82,47 @@ class _ImageUploadEditState extends State<ImageUploadEdit> {
         throw Exception('User not authenticated');
       }
 
-      // For now, we'll use a placeholder URL
-      // In production, you would upload the image to storage first
-      final imageUrl = 'https://via.placeholder.com/600x400';
+      // Upload image to Supabase Storage
+      String? imageUrl;
+      int fileSize = 0;
 
+      if (kIsWeb && _webImage != null) {
+        // Web upload
+        final fileName =
+            'meme_${currentUser.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        imageUrl = await SupabaseService.instance.uploadMemeImage(
+          bytes: _webImage!,
+          fileName: fileName,
+          userId: currentUser.id,
+        );
+        fileSize = _webImage!.length;
+      } else if (_imageFile != null) {
+        // Mobile upload
+        final fileName =
+            'meme_${currentUser.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final bytes = await _imageFile!.readAsBytes();
+        imageUrl = await SupabaseService.instance.uploadMemeImage(
+          bytes: bytes,
+          fileName: fileName,
+          userId: currentUser.id,
+        );
+        fileSize = bytes.length;
+      }
+
+      if (imageUrl == null) {
+        throw Exception('Failed to upload image');
+      }
+
+      // Create meme record in database
       await SupabaseService.instance.createMeme(
         userId: currentUser.id,
-        title: 'My Meme ${DateTime.now().millisecondsSinceEpoch}',
+        title: _overlayText.isNotEmpty
+            ? _overlayText
+            : 'My Meme ${DateTime.now().millisecondsSinceEpoch}',
         imageUrl: imageUrl,
         description: _overlayText.isNotEmpty ? _overlayText : null,
         visibility: 'private',
+        fileSize: fileSize,
       );
 
       if (mounted) {

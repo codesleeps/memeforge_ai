@@ -5,6 +5,7 @@ import 'package:sizer/sizer.dart';
 import '../../core/app_export.dart';
 import '../../services/gemini_service.dart';
 import '../../services/supabase_service.dart';
+import '../../services/unsplash_service.dart';
 import './widgets/chat_message_widget.dart';
 import './widgets/input_area_widget.dart';
 import './widgets/meme_preview_widget.dart';
@@ -25,6 +26,7 @@ class _AiMemeCreatorState extends State<AiMemeCreator>
   final FocusNode _messageFocusNode = FocusNode();
   final GeminiService _geminiService = GeminiService();
   final _supabaseService = SupabaseService.instance;
+  final _unsplashService = UnsplashService();
 
   bool _isGenerating = false;
   bool _showScrollButton = false;
@@ -228,7 +230,7 @@ class _AiMemeCreatorState extends State<AiMemeCreator>
 
           if (mounted) {
             // Use search terms for better image matching
-            final memeUrl = _getMemeImageUrl(memeResult.searchTerms);
+            final memeUrl = await _getMemeImageUrl(memeResult.searchTerms);
 
             setState(() {
               _messages.add({
@@ -300,19 +302,93 @@ class _AiMemeCreatorState extends State<AiMemeCreator>
     }
   }
 
-  String _getMemeImageUrl(String searchTerms) {
-    // Use Unsplash API with better search terms
-    // Clean and format search terms for URL
-    final cleanTerms = searchTerms
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9,\s]'), '')
-        .replaceAll(',', '%2C')
-        .replaceAll(' ', '%20');
+  Future<String> _getMemeImageUrl(String searchTerms) async {
+    // Try to fetch from Unsplash API first
+    try {
+      final imageUrl = await _unsplashService.searchPhoto(searchTerms);
+      if (imageUrl != null) {
+        return imageUrl;
+      }
+    } catch (e) {
+      print('Unsplash API error: $e');
+    }
 
-    // Use Unsplash Source API for random images matching search terms
-    // Fallback to general funny/meme-related images
-    final baseUrl = 'https://source.unsplash.com/800x800/?';
-    return '$baseUrl$cleanTerms,funny,humor';
+    // Fallback to curated images if API fails
+    final Map<String, String> categoryToImage = {
+      'cat':
+          'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=800',
+      'dog':
+          'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800',
+      'coffee':
+          'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800',
+      'work':
+          'https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800',
+      'office':
+          'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800',
+      'monday':
+          'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=800',
+      'tired':
+          'https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=800',
+      'sleep':
+          'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=800',
+      'food':
+          'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800',
+      'pizza':
+          'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800',
+      'coding':
+          'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800',
+      'programmer':
+          'https://images.unsplash.com/photo-1484417894907-623942c8ee29?w=800',
+      'computer':
+          'https://images.unsplash.com/photo-1587614382346-4ec70e388b28?w=800',
+      'funny':
+          'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=800',
+      'love':
+          'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800',
+      'friend':
+          'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800',
+      'party':
+          'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800',
+      'workout':
+          'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800',
+      'gym':
+          'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800',
+      'study':
+          'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800',
+      'student':
+          'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800',
+      'phone':
+          'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800',
+      'social':
+          'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=800',
+      'stress':
+          'https://images.unsplash.com/photo-1566125882500-87e10f726cdc?w=800',
+      'happy':
+          'https://images.unsplash.com/photo-1554080353-a576cf803bda?w=800',
+      'sad':
+          'https://images.unsplash.com/photo-1516302752625-fcc3c50ae61f?w=800',
+      'angry':
+          'https://images.unsplash.com/photo-1551817958-11e0f7bbea7a?w=800',
+      'success':
+          'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=800',
+      'fail':
+          'https://images.unsplash.com/photo-1620207418302-439b387441b0?w=800',
+      'money':
+          'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800',
+    };
+
+    // Clean search terms
+    final cleanTerms = searchTerms.toLowerCase().trim();
+
+    // Try to match specific categories
+    for (var entry in categoryToImage.entries) {
+      if (cleanTerms.contains(entry.key)) {
+        return entry.value;
+      }
+    }
+
+    // Default fallback to a generic funny/relatable image
+    return 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=800';
   }
 
   void _handleVoiceInput() {

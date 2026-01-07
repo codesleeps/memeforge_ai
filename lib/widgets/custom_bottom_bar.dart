@@ -97,17 +97,17 @@ class CustomBottomBar extends StatelessWidget {
             ),
             BottomNavigationBarItem(
               icon: _buildIcon(
-                icon: Icons.person_outline,
+                icon: Icons.upload_outlined,
                 isSelected: currentIndex == 3,
                 theme: theme,
               ),
               activeIcon: _buildIcon(
-                icon: Icons.person,
+                icon: Icons.upload,
                 isSelected: true,
                 theme: theme,
               ),
-              label: 'Profile',
-              tooltip: 'User Profile',
+              label: 'Upload',
+              tooltip: 'Upload Image',
             ),
           ],
         ),

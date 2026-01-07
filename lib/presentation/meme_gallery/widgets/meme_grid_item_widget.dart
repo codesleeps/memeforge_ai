@@ -62,9 +62,12 @@ class MemeGridItemWidget extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               CustomImageWidget(
-                imageUrl: meme['imageUrl'] as String,
+                imageUrl:
+                    (meme['image_url'] ?? meme['imageUrl'] ?? '') as String,
                 fit: BoxFit.cover,
-                semanticLabel: meme['semanticLabel'] as String,
+                semanticLabel:
+                    (meme['title'] ?? meme['semanticLabel'] ?? 'Meme')
+                        as String,
               ),
               if (isSelected)
                 Positioned(
@@ -115,7 +118,9 @@ class MemeGridItemWidget extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          meme['timestamp'] as String,
+                          _formatTimestamp(
+                            meme['created_at'] ?? meme['timestamp'] ?? '',
+                          ),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.onSurface,
                           ),
@@ -123,7 +128,8 @@ class MemeGridItemWidget extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (meme['isAiGenerated'] == true)
+                      if (meme['ai_generated'] == true ||
+                          meme['isAiGenerated'] == true)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
@@ -156,5 +162,37 @@ class MemeGridItemWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatTimestamp(dynamic timestamp) {
+    if (timestamp == null || timestamp == '') return '';
+
+    try {
+      DateTime dateTime;
+      if (timestamp is String) {
+        dateTime = DateTime.parse(timestamp);
+      } else if (timestamp is DateTime) {
+        dateTime = timestamp;
+      } else {
+        return '';
+      }
+
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inDays > 7) {
+        return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
+      } else if (difference.inDays > 0) {
+        return '${difference.inDays}d ago';
+      } else if (difference.inHours > 0) {
+        return '${difference.inHours}h ago';
+      } else if (difference.inMinutes > 0) {
+        return '${difference.inMinutes}m ago';
+      } else {
+        return 'Just now';
+      }
+    } catch (e) {
+      return '';
+    }
   }
 }

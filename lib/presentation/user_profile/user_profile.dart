@@ -65,6 +65,12 @@ class _UserProfileState extends State<UserProfile> {
         _userStats = results[1] as Map<String, dynamic>;
         _userMemes = results[2] as List<dynamic>;
         _achievements = results[3] as List<dynamic>;
+
+        // Add mock achievements if none exist
+        if (_achievements.isEmpty) {
+          _achievements = _getMockAchievements();
+        }
+
         _isFollowing = results[4] as bool;
         _isLoading = false;
       });
@@ -110,6 +116,47 @@ class _UserProfileState extends State<UserProfile> {
         onProfileUpdated: _refreshProfile,
       ),
     );
+  }
+
+  List<Map<String, dynamic>> _getMockAchievements() {
+    final memesCount = _userStats['memes_count'] ?? 0;
+    final aiCount = _userStats['ai_generations'] ?? 0;
+    final likesCount = _userStats['likes_received'] ?? 0;
+
+    return [
+      {
+        'achievement_name': 'First Meme',
+        'achievement_type': 'first_meme',
+        'achievement_description': 'Created your first meme',
+        'is_unlocked': memesCount >= 1,
+        'progress': memesCount >= 1 ? 1 : 0,
+        'required_count': 1,
+      },
+      {
+        'achievement_name': 'AI Master',
+        'achievement_type': 'ai_master',
+        'achievement_description': 'Generated 10 AI memes',
+        'is_unlocked': aiCount >= 10,
+        'progress': aiCount,
+        'required_count': 10,
+      },
+      {
+        'achievement_name': 'Viral Creator',
+        'achievement_type': 'viral_creator',
+        'achievement_description': 'Received 100 likes',
+        'is_unlocked': likesCount >= 100,
+        'progress': likesCount,
+        'required_count': 100,
+      },
+      {
+        'achievement_name': 'Prolific Creator',
+        'achievement_type': 'prolific_creator',
+        'achievement_description': 'Created 50 memes',
+        'is_unlocked': memesCount >= 50,
+        'progress': memesCount,
+        'required_count': 50,
+      },
+    ];
   }
 
   @override
@@ -171,19 +218,33 @@ class _UserProfileState extends State<UserProfile> {
                       ),
                     ),
                     SizedBox(height: 1.h),
-                    SizedBox(
-                      height: 14.h,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: 4.w),
-                        itemCount: _achievements.length,
-                        itemBuilder: (context, index) {
-                          return AchievementBadgeWidget(
-                            achievement: _achievements[index],
-                          );
-                        },
-                      ),
-                    ),
+                    _achievements.isEmpty
+                        ? Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 4.w,
+                              vertical: 2.h,
+                            ),
+                            child: Text(
+                              'No achievements yet. Start creating memes!',
+                              style: TextStyle(
+                                color: AppTheme.textSecondaryDark,
+                                fontSize: 12.sp,
+                              ),
+                            ),
+                          )
+                        : SizedBox(
+                            height: 14.h,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: EdgeInsets.symmetric(horizontal: 4.w),
+                              itemCount: _achievements.length,
+                              itemBuilder: (context, index) {
+                                return AchievementBadgeWidget(
+                                  achievement: _achievements[index],
+                                );
+                              },
+                            ),
+                          ),
                     SizedBox(height: 3.h),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 4.w),

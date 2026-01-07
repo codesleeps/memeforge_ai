@@ -58,8 +58,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _loadNotifications() async {
-    if (!_hasMore || _isLoading) return;
-
     setState(() => _isLoading = true);
 
     try {
@@ -82,12 +80,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load notifications: $e')),
-        );
-      }
+      debugPrint('Failed to load notifications: $e');
+      setState(() {
+        _isLoading = false;
+        _hasMore = false;
+      });
     }
   }
 

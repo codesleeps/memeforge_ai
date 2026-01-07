@@ -9,7 +9,10 @@ import './widgets/recent_meme_card_widget.dart';
 import './widgets/trending_template_card_widget.dart';
 
 class HomeDashboardInitialPage extends StatefulWidget {
-  const HomeDashboardInitialPage({Key? key}) : super(key: key);
+  final Function(int)? onNavigateToTab;
+
+  const HomeDashboardInitialPage({Key? key, this.onNavigateToTab})
+    : super(key: key);
 
   @override
   State<HomeDashboardInitialPage> createState() =>
@@ -84,10 +87,8 @@ class _HomeDashboardInitialPageState extends State<HomeDashboardInitialPage> {
 
   void _handleCreateMeme() {
     HapticFeedback.lightImpact();
-    Navigator.of(
-      context,
-      rootNavigator: true,
-    ).pushNamed(AppRoutes.aiMemeCreator);
+    // Navigate to AI Create tab (index 1)
+    widget.onNavigateToTab?.call(1);
   }
 
   void _handleSearch() {
@@ -330,10 +331,8 @@ class _HomeDashboardInitialPageState extends State<HomeDashboardInitialPage> {
               TextButton(
                 onPressed: () {
                   HapticFeedback.lightImpact();
-                  Navigator.of(
-                    context,
-                    rootNavigator: true,
-                  ).pushNamed(AppRoutes.memeGallery);
+                  // Navigate to Gallery tab (index 2)
+                  widget.onNavigateToTab?.call(2);
                 },
                 child: Text(
                   'View All',

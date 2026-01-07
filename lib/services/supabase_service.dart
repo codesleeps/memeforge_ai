@@ -281,6 +281,7 @@ class SupabaseService {
     required String imageUrl,
     String? description,
     required String visibility,
+    int fileSize = 0,
     bool aiGenerated = false,
     String? aiPrompt,
     String? topText,
@@ -299,7 +300,7 @@ class SupabaseService {
             'ai_prompt': aiPrompt,
             'top_text': topText,
             'bottom_text': bottomText,
-            'file_size': 0, // Default to 0 for external URLs
+            'file_size': fileSize,
             'created_at': DateTime.now().toIso8601String(),
           })
           .select()
@@ -308,6 +309,35 @@ class SupabaseService {
       return response;
     } catch (e) {
       throw Exception('Failed to create meme: ${e.toString()}');
+    }
+  }
+
+  /// Upload meme image to Supabase Storage
+  /// Returns the public URL of the uploaded image
+  Future<String?> uploadMemeImage({
+    required Uint8List bytes,
+    required String fileName,
+    required String userId,
+  }) async {
+    try {
+      // Create bucket path: memes/{userId}/{fileName}
+      final path = 'memes/$userId/$fileName';
+
+      // Upload to Supabase Storage
+      await _client.storage
+          .from('memes')
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+          );
+
+      // Get public URL
+      final publicUrl = _client.storage.from('memes').getPublicUrl(path);
+      return publicUrl;
+    } catch (e) {
+      debugPrint('Upload meme image error: $e');
+      return null;
     }
   }
 

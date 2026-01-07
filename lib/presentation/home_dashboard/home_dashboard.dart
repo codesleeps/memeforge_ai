@@ -22,8 +22,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
   final List<Widget> _screens = [
     HomeDashboardInitialPage(key: ValueKey('home')),
-    MemeGallery(key: ValueKey('gallery')),
     AiMemeCreator(key: ValueKey('ai')),
+    MemeGallery(key: ValueKey('gallery')),
     ImageUploadEdit(key: ValueKey('upload')),
   ];
 
@@ -31,6 +31,24 @@ class _HomeDashboardState extends State<HomeDashboard> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  void _navigateToTab(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  List<Widget> _buildScreens() {
+    return [
+      HomeDashboardInitialPage(
+        key: ValueKey('home'),
+        onNavigateToTab: _navigateToTab,
+      ),
+      AiMemeCreator(key: ValueKey('ai')),
+      MemeGallery(key: ValueKey('gallery')),
+      ImageUploadEdit(key: ValueKey('upload')),
+    ];
   }
 
   Future<void> _handleSignOut() async {
@@ -108,7 +126,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ),
         ],
       ),
-      body: IndexedStack(index: _selectedIndex, children: _screens),
+      body: IndexedStack(index: _selectedIndex, children: _buildScreens()),
       bottomNavigationBar: CustomBottomBar(
         currentIndex: _selectedIndex,
         onTap: (index) {

@@ -7,7 +7,7 @@ class GeminiService {
   GenerativeModel? _model;
   GenerativeModel? _visionModel;
   // Gemini API Key - loaded from environment or hardcoded
-  static const String apiKey = 'AIzaSyBgkc55uIuOpPKliKEbZfCBvY8vKGtNVxI';
+  static const String apiKey = 'AIzaSyApUcG7lPZ0Ur7Q291uUMzaY_5vIeDgnt8';
   bool _isInitialized = false;
   String? _initializationError;
 
@@ -28,7 +28,7 @@ class GeminiService {
 
       // Initialize text generation model with optimized settings
       _model = GenerativeModel(
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash',
         apiKey: apiKey,
         generationConfig: GenerationConfig(
           temperature: 0.9,
@@ -53,7 +53,7 @@ class GeminiService {
 
       // Initialize vision model for image analysis
       _visionModel = GenerativeModel(
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash',
         apiKey: apiKey,
         generationConfig: GenerationConfig(
           temperature: 0.7,
