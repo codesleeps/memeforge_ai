@@ -152,35 +152,38 @@ class AchievementBadgeWidget extends StatelessWidget {
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
               color: isUnlocked
                   ? color
                   : AppTheme.textSecondaryDark.withAlpha(128),
-              size: 32.sp,
+              size: 28.sp,
             ),
-            SizedBox(height: 1.h),
-            Text(
-              name,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isUnlocked
-                    ? AppTheme.textPrimaryDark
-                    : AppTheme.textSecondaryDark.withAlpha(128),
-                fontSize: 11.sp,
-                fontWeight: FontWeight.bold,
+            SizedBox(height: 0.5.h),
+            Flexible(
+              child: Text(
+                name,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isUnlocked
+                      ? AppTheme.textPrimaryDark
+                      : AppTheme.textSecondaryDark.withAlpha(128),
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
             if (!isUnlocked) ...[
-              SizedBox(height: 0.5.h),
+              SizedBox(height: 0.3.h),
               Text(
                 '${(progressPercent * 100).toInt()}%',
                 style: TextStyle(
                   color: AppTheme.textSecondaryDark.withAlpha(128),
-                  fontSize: 10.sp,
+                  fontSize: 9.sp,
                 ),
               ),
             ],

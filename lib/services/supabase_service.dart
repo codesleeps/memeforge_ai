@@ -341,6 +341,35 @@ class SupabaseService {
     }
   }
 
+  /// Upload profile avatar to Supabase Storage
+  /// Returns the public URL of the uploaded avatar
+  Future<String?> uploadProfileAvatar({
+    required Uint8List bytes,
+    required String userId,
+  }) async {
+    try {
+      final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      // Use memes bucket with avatars subfolder since avatars bucket doesn't exist yet
+      final path = 'avatars/$userId/$fileName';
+
+      // Upload to Supabase Storage (using memes bucket)
+      await _client.storage
+          .from('memes')
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+          );
+
+      // Get public URL
+      final publicUrl = _client.storage.from('memes').getPublicUrl(path);
+      return publicUrl;
+    } catch (e) {
+      debugPrint('Upload avatar error: $e');
+      return null;
+    }
+  }
+
   Future<void> deleteMeme(String memeId) async {
     try {
       await client.from('memes').delete().eq('id', memeId);

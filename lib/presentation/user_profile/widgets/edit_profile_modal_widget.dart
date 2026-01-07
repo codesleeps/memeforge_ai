@@ -1,4 +1,8 @@
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sizer/sizer.dart';
 
 import '../../../core/app_export.dart';
@@ -25,7 +29,11 @@ class _EditProfileModalWidgetState extends State<EditProfileModalWidget> {
   final _usernameController = TextEditingController();
   final _bioController = TextEditingController();
   final _supabaseService = SupabaseService.instance;
+  final _imagePicker = ImagePicker();
+
   bool _isSaving = false;
+  Uint8List? _selectedImageBytes;
+  String? _currentAvatarUrl;
 
   @override
   void initState() {
@@ -33,6 +41,7 @@ class _EditProfileModalWidgetState extends State<EditProfileModalWidget> {
     _fullNameController.text = widget.currentProfile['full_name'] ?? '';
     _usernameController.text = widget.currentProfile['username'] ?? '';
     _bioController.text = widget.currentProfile['bio'] ?? '';
+    _currentAvatarUrl = widget.currentProfile['avatar_url'];
   }
 
   @override
@@ -41,6 +50,33 @@ class _EditProfileModalWidgetState extends State<EditProfileModalWidget> {
     _usernameController.dispose();
     _bioController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        setState(() {
+          _selectedImageBytes = bytes;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick image: ${e.toString()}'),
+            backgroundColor: AppTheme.errorDark,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _saveProfile() async {
@@ -54,12 +90,43 @@ class _EditProfileModalWidgetState extends State<EditProfileModalWidget> {
       return;
     }
 
+    String? avatarUrl;
+
+    // Upload new avatar if selected
+    if (_selectedImageBytes != null) {
+      debugPrint('Uploading avatar...');
+      avatarUrl = await _supabaseService.uploadProfileAvatar(
+        bytes: _selectedImageBytes!,
+        userId: userId,
+      );
+
+      debugPrint('Avatar uploaded: $avatarUrl');
+
+      if (avatarUrl == null) {
+        setState(() => _isSaving = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to upload avatar'),
+              backgroundColor: AppTheme.errorDark,
+            ),
+          );
+        }
+        return;
+      }
+    }
+
+    debugPrint('Updating profile with avatar: $avatarUrl');
+
     final success = await _supabaseService.updateUserProfile(
       userId: userId,
       fullName: _fullNameController.text.trim(),
       username: _usernameController.text.trim(),
       bio: _bioController.text.trim(),
+      avatarUrl: avatarUrl, // Only update if new avatar was uploaded
     );
+
+    debugPrint('Profile update success: $success');
 
     setState(() => _isSaving = false);
 
@@ -126,6 +193,76 @@ class _EditProfileModalWidgetState extends State<EditProfileModalWidget> {
                   ],
                 ),
                 SizedBox(height: 2.h),
+                // Avatar picker
+                Center(
+                  child: GestureDetector(
+                    onTap: _pickImage,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 30.w,
+                          height: 30.w,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppTheme.primaryDark,
+                              width: 3.0,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryDark.withAlpha(77),
+                                blurRadius: 12.0,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: _selectedImageBytes != null
+                                ? Image.memory(
+                                    _selectedImageBytes!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : _currentAvatarUrl != null &&
+                                      _currentAvatarUrl!.isNotEmpty
+                                ? CustomImageWidget(
+                                    imageUrl: _currentAvatarUrl!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Container(
+                                    color: AppTheme.cardDark,
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 15.w,
+                                      color: AppTheme.textSecondaryDark,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: EdgeInsets.all(2.w),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryDark,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppTheme.backgroundDark,
+                                width: 2.0,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.camera_alt,
+                              color: AppTheme.backgroundDark,
+                              size: 4.w,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 3.h),
                 TextFormField(
                   controller: _fullNameController,
                   style: TextStyle(
@@ -258,7 +395,9 @@ class _EditProfileModalWidgetState extends State<EditProfileModalWidget> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),
-                      disabledBackgroundColor: AppTheme.primaryDark.withAlpha(128),
+                      disabledBackgroundColor: AppTheme.primaryDark.withAlpha(
+                        128,
+                      ),
                     ),
                     child: _isSaving
                         ? SizedBox(
