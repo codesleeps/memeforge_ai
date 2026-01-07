@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -343,27 +345,19 @@ class SupabaseService {
 
   /// Upload profile avatar to Supabase Storage
   /// Returns the public URL of the uploaded avatar
+  /// NOTE: Currently returns a data URL since storage buckets don't exist yet
   Future<String?> uploadProfileAvatar({
     required Uint8List bytes,
     required String userId,
   }) async {
     try {
-      final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      // Use memes bucket with avatars subfolder since avatars bucket doesn't exist yet
-      final path = 'avatars/$userId/$fileName';
+      // Convert bytes to base64 data URL as temporary solution
+      // This stores the image directly in the database until storage bucket is created
+      final base64Image = base64Encode(bytes);
+      final dataUrl = 'data:image/jpeg;base64,$base64Image';
 
-      // Upload to Supabase Storage (using memes bucket)
-      await _client.storage
-          .from('memes')
-          .uploadBinary(
-            path,
-            bytes,
-            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
-          );
-
-      // Get public URL
-      final publicUrl = _client.storage.from('memes').getPublicUrl(path);
-      return publicUrl;
+      debugPrint('Avatar converted to data URL (${bytes.length} bytes)');
+      return dataUrl;
     } catch (e) {
       debugPrint('Upload avatar error: $e');
       return null;
