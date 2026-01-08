@@ -20,6 +20,17 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    // Check if user is already authenticated after OAuth redirect
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (SupabaseService.instance.isAuthenticated) {
+        Navigator.pushReplacementNamed(context, AppRoutes.homeDashboard);
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
