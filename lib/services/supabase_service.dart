@@ -80,8 +80,9 @@ class SupabaseService {
       final result = await client.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: kIsWeb
-            ? 'http://localhost:50193'
+            ? Uri.base.toString()
             : 'io.supabase.memeforge://login-callback/',
+        authScreenLaunchMode: LaunchMode.platformDefault,
       );
       return result;
     } catch (error) {
