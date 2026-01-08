@@ -334,53 +334,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 3.h),
-                  // Demo credentials
-                  Container(
-                    padding: EdgeInsets.all(3.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1A1F3A),
-                      borderRadius: BorderRadius.circular(12.0),
-                      border: Border.all(
-                        color: const Color(0xFF6C5CE7).withAlpha(77),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: const Color(0xFF6C5CE7),
-                              size: 5.w,
-                            ),
-                            SizedBox(width: 2.w),
-                            Text(
-                              'Demo Credentials',
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 2.h),
-                        _buildCredentialRow(
-                          'Demo User',
-                          'demo@memeforge.ai',
-                          'Demo@123',
-                        ),
-                        SizedBox(height: 1.h),
-                        _buildCredentialRow(
-                          'Premium User',
-                          'premium@memeforge.ai',
-                          'Premium@123',
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 3.h),
                   // Sign up link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -413,43 +366,6 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildCredentialRow(String label, String email, String password) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: const Color(0xFF6C5CE7),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(height: 0.5.h),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Email: $email',
-                style: TextStyle(fontSize: 11.sp, color: Colors.grey[400]),
-              ),
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Password: $password',
-                style: TextStyle(fontSize: 11.sp, color: Colors.grey[400]),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }
