@@ -57,6 +57,43 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final success = await SupabaseService.instance.signInWithGoogle();
+
+      if (!mounted) return;
+
+      if (success) {
+        // Wait a moment for auth state to update
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted && SupabaseService.instance.isAuthenticated) {
+          Navigator.pushReplacementNamed(context, AppRoutes.homeDashboard);
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Google sign-in cancelled or failed'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Google sign-in failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,7 +236,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, AppRoutes.forgotPasswordScreen);
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.forgotPasswordScreen,
+                        );
                       },
                       child: Text(
                         'Forgot Password?',
@@ -233,6 +273,53 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.white,
                               ),
                             ),
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  // OR divider
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey[700])),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 3.w),
+                        child: Text(
+                          'OR',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: Colors.grey[700])),
+                    ],
+                  ),
+                  SizedBox(height: 2.h),
+                  // Google Sign In button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 6.h,
+                    child: OutlinedButton.icon(
+                      onPressed: _isLoading ? null : _handleGoogleSignIn,
+                      icon: Icon(
+                        Icons.g_mobiledata,
+                        size: 8.w,
+                        color: Colors.white,
+                      ),
+                      label: Text(
+                        'Continue with Google',
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey[700]!),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        backgroundColor: const Color(0xFF1A1F3A),
+                      ),
                     ),
                   ),
                   SizedBox(height: 3.h),
